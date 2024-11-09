@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {"name" : "Problem 1", "setup" : "", "run" : "cabal run Test 1", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },
+    {"name" : "Problem 2", "setup" : "", "run" : "cabal run Test 2", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 3", "setup" : "", "run" : "cabal run Test 3", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 4", "setup" : "", "run" : "cabal run Test 4", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 5", "setup" : "", "run" : "cabal run Test 5", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 6", "setup" : "", "run" : "cabal run Test 6", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 7", "setup" : "", "run" : "cabal run Test 7", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 8", "setup" : "", "run" : "cabal run Test 8", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 9", "setup" : "", "run" : "cabal run Test 9", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 },       
+    {"name" : "Problem 10", "setup" : "", "run" : "cabal run Test 10", "input" : "", "output" : "", "comparison" : "included", "timeout" : 0.5, "points" : 1 }
+  ]
+}
