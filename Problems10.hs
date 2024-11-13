@@ -59,7 +59,7 @@ instance Show Expr where
   showsPrec i Recall    = showString "recall"
   showsPrec i (Throw m) = showParen (i > 2) $ showString "throw " . showsPrec 3 m
   showsPrec i (Catch m y n) = showParen (i > 0) $ showString "try " . showsPrec 0 m . showString " catch " . showString y . showString " -> " . showsPrec 0 n
--}  
+-}
 
 -- Values are, as usual, integer and function constants
 isValue :: Expr -> Bool
@@ -108,7 +108,12 @@ subst x m (Var y)
   | otherwise = Var y
 subst x m (Lam y n) = Lam y (substUnder x m y n)
 subst x m (App n1 n2) = App (subst x m n1) (subst x m n2)
-subst x m n = undefined
+subst x m (Store n)   = Store (subst x m n)
+subst x m Recall      = Recall
+subst x m (Throw e)   = Throw (subst x m e)
+subst x m (Catch e1 s e2) 
+  | x == s      = Catch (subst x m e1) s e2 
+  | otherwise   = Catch (subst x m e1) s (subst x m e2)
 
 {-------------------------------------------------------------------------------
 
@@ -202,7 +207,60 @@ bubble; this won't *just* be `Throw` and `Catch.
 -------------------------------------------------------------------------------}
 
 smallStep :: (Expr, Expr) -> Maybe (Expr, Expr)
-smallStep = undefined
+smallStep (Const _, _)                  = Nothing 
+smallStep (Plus (Const i) (Const j), s) = Just (Const (i+j), s)
+smallStep (Plus (Throw m) n, s)         = Just (Throw m, s)
+smallStep (Plus m (Throw n), s)         
+  | isValue m = Just (Throw n, s)
+  | otherwise = case smallStep (m, s) of 
+                  Just (m', s') -> Just (Plus m' (Throw n), s')
+                  _             -> Nothing
+smallStep (Plus m n, s) = case (smallStep (m, s), smallStep (n, s)) of 
+                            (Just (m', s'), _) -> Just (Plus m' n, s')
+                            (_, Just (n', s')) -> Just (Plus m n', s')
+                            _                  -> Nothing 
+smallStep (Var _, _)                    = Nothing
+smallStep (Lam _ _, _)                  = Nothing
+smallStep (App (Throw m) n, s)          = Just (Throw m, s)
+smallStep (App (Lam x m) n, s)
+  | isValue n = Just (subst x n m, s)
+smallStep (App m (Throw n), s)         
+  | isValue m = Just (Throw n, s)
+  | otherwise = case smallStep (m, s) of 
+                  Just (m', s') -> Just (App m' (Throw n), s')
+                  _             -> Nothing
+smallStep (App m n, s) = case (smallStep (m, s), smallStep (n, s)) of 
+                            (Just (m', s'), _) -> Just (App m' n, s')
+                            (_, Just (n', s')) -> Just (App m n', s')
+                            _                  -> Nothing 
+smallStep (Store (Throw e), s)  
+  | isValue e = Just (Throw e, s)
+  | otherwise = case smallStep (e, s) of 
+                  Just (e', s') -> Just (Store (Throw e'), s')
+                  _             -> Nothing
+smallStep (Store m, s)
+  | isValue m             = Just (m, m)
+  | otherwise             = case smallStep (m, s) of 
+                              Just (m', s') -> Just (Store m', s')
+                              _             -> Nothing
+smallStep (Recall, s)                   = Just (s, s)
+smallStep (Throw (Throw e), s) 
+  | isValue e                  = Just (Throw e, s)
+  | otherwise = case smallStep (e, s) of 
+                  Just (e', s') -> Just (Throw (Throw e'), s')
+                  _     -> Nothing
+smallStep (Throw e, s)
+  | isValue e                  = Nothing 
+  | otherwise = case smallStep (e, s) of 
+                  Just (e', s') -> Just (Throw e', s')
+                  _     -> Nothing
+smallStep (Catch (Throw e) x n, s)      = Just (subst x e n, s)
+smallStep (Catch m x n, s)
+  | isValue m = Just (m, s)
+  | otherwise = case smallStep (m, s) of 
+                  Just (m', s') -> Just (Catch m' x n, s')
+                  _             -> Nothing
+
 
 steps :: (Expr, Expr) -> [(Expr, Expr)]
 steps s = case smallStep s of
